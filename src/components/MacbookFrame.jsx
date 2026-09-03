@@ -3,10 +3,17 @@ import React from 'react';
 /**
  * MacBook Pro / Desktop Ultra-Thin Laptop Bezel Frame
  */
-export default function MacbookFrame({ children }) {
+export default function MacbookFrame({ children, aspectRatio }) {
   return (
     <div className="macbook-stage">
-      <div className="macbook-chassis">
+      <div
+        className="macbook-chassis"
+        style={{
+          aspectRatio: aspectRatio ? `${aspectRatio}` : '16 / 10',
+          maxWidth: '100%',
+          maxHeight: '100%'
+        }}
+      >
         {/* Top FaceTime Camera Center Dot */}
         <div className="macbook-camera-notch">
           <div className="macbook-camera-lens" />

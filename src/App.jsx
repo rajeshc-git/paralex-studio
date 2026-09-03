@@ -287,7 +287,7 @@ export default function App() {
     } else if (activeFrameMode === 'ipad') {
       return <IpadFrame>{canvasComponent}</IpadFrame>;
     } else {
-      return <MacbookFrame>{canvasComponent}</MacbookFrame>;
+      return <MacbookFrame aspectRatio={imageAspect}>{canvasComponent}</MacbookFrame>;
     }
   };
 
@@ -580,16 +580,28 @@ export default function App() {
             <X size={18} />
           </button>
 
-          {/* Full-page canvas — fills entire viewport */}
+          {/* Full-page canvas — maintains exact original photo aspect ratio without cropping */}
           <div className="fullscreen-stage">
-            <ParallaxCanvas
-              imageSrc={currentPhoto.image}
-              depthSrc={currentPhoto.depth}
-              intensity={intensity}
-              focusPlane={focusPlane}
-              autoWiggle={true}
-              useGyro={true}
-            />
+            <div
+              className="fullscreen-canvas-box"
+              style={{
+                aspectRatio: imageAspect ? `${imageAspect}` : '1 / 1',
+                width: imageAspect >= 1 ? 'min(100vw, calc(100vh * ' + imageAspect + '))' : 'calc(100vh * ' + imageAspect + ')',
+                height: imageAspect <= 1 ? 'min(100vh, calc(100vw / ' + imageAspect + '))' : 'calc(100vw / ' + imageAspect + ')',
+                maxWidth: '100vw',
+                maxHeight: '100vh'
+              }}
+            >
+              <ParallaxCanvas
+                imageSrc={currentPhoto.image}
+                depthSrc={currentPhoto.depth}
+                intensity={intensity}
+                focusPlane={focusPlane}
+                overscan={0.02}
+                autoWiggle={true}
+                useGyro={true}
+              />
+            </div>
           </div>
         </div>
       )}

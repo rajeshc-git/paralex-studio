@@ -23,23 +23,33 @@ const ParallaxShader = {
     varying vec2 vUv;
 
     void main() {
-      // Calculate aspect-ratio COVER texture coordinates
+      // Aspect-ratio CONTAIN fitting (preserves full image, never crops head/subject)
       vec2 st = vUv;
       float screenAspect = uResolution.x / uResolution.y;
       float imgAspect = uImageAspect.x / uImageAspect.y;
 
       vec2 uvFit = st;
-      if (screenAspect > imgAspect) {
-        // Screen is wider than image -> fit width, crop top/bottom symmetrically
-        float ratio = imgAspect / screenAspect;
-        uvFit.y = (st.y - 0.5) * ratio + 0.5;
-      } else {
-        // Screen is taller than image -> fit height, crop left/right symmetrically
-        float ratio = screenAspect / imgAspect;
-        uvFit.x = (st.x - 0.5) * ratio + 0.5;
+      if (abs(screenAspect - imgAspect) > 0.005) {
+        if (screenAspect > imgAspect) {
+          // Screen wider than image -> fit height, center horizontally
+          float ratio = screenAspect / imgAspect;
+          uvFit.x = (st.x - 0.5) * ratio + 0.5;
+          if (uvFit.x < 0.0 || uvFit.x > 1.0) {
+            gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+            return;
+          }
+        } else {
+          // Screen taller than image -> fit width, center vertically
+          float ratio = imgAspect / screenAspect;
+          uvFit.y = (st.y - 0.5) * ratio + 0.5;
+          if (uvFit.y < 0.0 || uvFit.y > 1.0) {
+            gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+            return;
+          }
+        }
       }
 
-      // Safe overscan zoom to eliminate border clamping stretch
+      // Safe subtle overscan zoom (0.02) to eliminate border clamping stretch
       vec2 centeredUv = (uvFit - 0.5) * (1.0 - uOverscan) + 0.5;
 
       // Sample depth map
@@ -73,7 +83,7 @@ const ParallaxCanvas = forwardRef(function ParallaxCanvas(
     depthSrc,
     intensity = 0.05,
     focusPlane = 0.5,
-    overscan = 0.08,
+    overscan = 0.02,
     autoWiggle = true,
     showDepth = false,
     invertDepth = false,
