@@ -1,9 +1,17 @@
 import React from 'react';
+import { Maximize2, Minimize2 } from 'lucide-react';
 
 /**
  * MacBook Pro / Desktop Ultra-Thin Laptop Bezel Frame
  */
-export default function MacbookFrame({ children, aspectRatio }) {
+export default function MacbookFrame({
+  children,
+  aspectRatio,
+  fitMode = 'contain',
+  onToggleFitMode
+}) {
+  const isCover = fitMode === 'cover';
+
   return (
     <div className="macbook-stage">
       <div
@@ -25,6 +33,17 @@ export default function MacbookFrame({ children, aspectRatio }) {
           <div className="macbook-content-layer">
             {children}
           </div>
+
+          {/* Icon-Only Stretch Toggle Button */}
+          {onToggleFitMode && (
+            <button
+              className="frame-stretch-toggle-btn macbook-pos"
+              onClick={onToggleFitMode}
+              title={isCover ? 'Fit Original Photo' : 'Stretch to Full Screen'}
+            >
+              {isCover ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
+            </button>
+          )}
         </div>
 
         {/* Bottom Laptop Hinge & Base Lip */}

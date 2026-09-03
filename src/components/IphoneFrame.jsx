@@ -50,24 +50,14 @@ export default function IphoneFrame({
             {children}
           </div>
 
-          {/* Stretch to Full Screen / Fit Photo Floating Button */}
+          {/* Icon-Only Stretch Toggle Button */}
           {onToggleFitMode && (
             <button
-              className="iphone-stretch-toggle-btn"
+              className="frame-stretch-toggle-btn"
               onClick={onToggleFitMode}
               title={isCover ? 'Fit Original Photo' : 'Stretch to Full Screen'}
             >
-              {isCover ? (
-                <>
-                  <Minimize2 size={12} />
-                  <span>Fit Photo</span>
-                </>
-              ) : (
-                <>
-                  <Maximize2 size={12} />
-                  <span>Stretch to Full Screen</span>
-                </>
-              )}
+              {isCover ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
             </button>
           )}
 

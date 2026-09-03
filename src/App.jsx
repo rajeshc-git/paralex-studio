@@ -46,7 +46,7 @@ export default function App() {
   // 3D Parallax Settings
   const [intensity, setIntensity] = useState(0.05);
   const [focusPlane, setFocusPlane] = useState(0.5);
-  const [iphoneFitMode, setIphoneFitMode] = useState('contain'); // 'contain' | 'cover'
+  const [frameFitMode, setFrameFitMode] = useState('contain'); // 'contain' | 'cover'
 
   // Fullscreen Interactive Web View Modal
   const [isFullscreenModal, setIsFullscreenModal] = useState(false);
@@ -271,6 +271,9 @@ export default function App() {
   const renderFrameStage = () => {
     if (!currentPhoto) return null;
 
+    const toggleFitMode = () =>
+      setFrameFitMode((prev) => (prev === 'contain' ? 'cover' : 'contain'));
+
     const canvasComponent = (
       <ParallaxCanvas
         ref={canvasHandleRef}
@@ -278,7 +281,7 @@ export default function App() {
         depthSrc={currentPhoto.depth}
         intensity={intensity}
         focusPlane={focusPlane}
-        fitMode={activeFrameMode === 'iphone' ? iphoneFitMode : 'contain'}
+        fitMode={frameFitMode}
         autoWiggle={true}
         useGyro={true}
       />
@@ -286,19 +289,26 @@ export default function App() {
 
     if (activeFrameMode === 'iphone') {
       return (
-        <IphoneFrame
-          fitMode={iphoneFitMode}
-          onToggleFitMode={() =>
-            setIphoneFitMode((prev) => (prev === 'contain' ? 'cover' : 'contain'))
-          }
-        >
+        <IphoneFrame fitMode={frameFitMode} onToggleFitMode={toggleFitMode}>
           {canvasComponent}
         </IphoneFrame>
       );
     } else if (activeFrameMode === 'ipad') {
-      return <IpadFrame>{canvasComponent}</IpadFrame>;
+      return (
+        <IpadFrame fitMode={frameFitMode} onToggleFitMode={toggleFitMode}>
+          {canvasComponent}
+        </IpadFrame>
+      );
     } else {
-      return <MacbookFrame aspectRatio={imageAspect}>{canvasComponent}</MacbookFrame>;
+      return (
+        <MacbookFrame
+          aspectRatio={imageAspect}
+          fitMode={frameFitMode}
+          onToggleFitMode={toggleFitMode}
+        >
+          {canvasComponent}
+        </MacbookFrame>
+      );
     }
   };
 
