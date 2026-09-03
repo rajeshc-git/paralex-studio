@@ -621,6 +621,42 @@ html, body {
   pointer-events: none;
 }
 
+/* Floating Stretch to Full Screen Button for iPhone Frame */
+.iphone-stretch-toggle-btn {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 99px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.iphone-stretch-toggle-btn:hover {
+  background: rgba(0, 113, 227, 0.85);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateX(-50%) scale(1.05);
+}
+
+.iphone-stretch-toggle-btn:active {
+  transform: translateX(-50%) scale(0.96);
+}
+
 /* Responsive MacBook / Desktop Laptop Stage */
 .macbook-stage {
   display: flex;

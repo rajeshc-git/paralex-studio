@@ -1,7 +1,12 @@
 import React from 'react';
-import { Wifi, Battery, Signal } from 'lucide-react';
+import { Wifi, Battery, Signal, Maximize2, Minimize2 } from 'lucide-react';
 
-export default function IphoneFrame({ children, isFrameActive = true }) {
+export default function IphoneFrame({
+  children,
+  fitMode = 'contain',
+  onToggleFitMode,
+  isFrameActive = true
+}) {
   if (!isFrameActive) {
     return (
       <div className="borderless-canvas-container">
@@ -9,6 +14,8 @@ export default function IphoneFrame({ children, isFrameActive = true }) {
       </div>
     );
   }
+
+  const isCover = fitMode === 'cover';
 
   return (
     <div className="iphone-stage">
@@ -42,6 +49,27 @@ export default function IphoneFrame({ children, isFrameActive = true }) {
           <div className="iphone-content-layer">
             {children}
           </div>
+
+          {/* Stretch to Full Screen / Fit Photo Floating Button */}
+          {onToggleFitMode && (
+            <button
+              className="iphone-stretch-toggle-btn"
+              onClick={onToggleFitMode}
+              title={isCover ? 'Fit Original Photo' : 'Stretch to Full Screen'}
+            >
+              {isCover ? (
+                <>
+                  <Minimize2 size={12} />
+                  <span>Fit Photo</span>
+                </>
+              ) : (
+                <>
+                  <Maximize2 size={12} />
+                  <span>Stretch to Full Screen</span>
+                </>
+              )}
+            </button>
+          )}
 
           {/* Home indicator bar */}
           <div className="iphone-home-bar" />

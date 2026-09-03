@@ -18,33 +18,44 @@ const ParallaxShader = {
     uniform float uOverscan;
     uniform float uInvert;
     uniform float uShowDepth;
+    uniform float uFitMode;
     uniform vec2 uResolution;
     uniform vec2 uImageAspect;
     varying vec2 vUv;
 
     void main() {
-      // Aspect-ratio CONTAIN fitting (preserves full image, never crops head/subject)
+      // Aspect-ratio fitting: contain (0.0) vs cover/stretch (1.0)
       vec2 st = vUv;
       float screenAspect = uResolution.x / uResolution.y;
       float imgAspect = uImageAspect.x / uImageAspect.y;
 
       vec2 uvFit = st;
       if (abs(screenAspect - imgAspect) > 0.005) {
-        if (screenAspect > imgAspect) {
-          // Screen wider than image -> fit height, center horizontally
-          float ratio = screenAspect / imgAspect;
-          uvFit.x = (st.x - 0.5) * ratio + 0.5;
-          if (uvFit.x < 0.0 || uvFit.x > 1.0) {
-            gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
-            return;
+        if (uFitMode > 0.5) {
+          // COVER / FILL FULL SCREEN
+          if (screenAspect > imgAspect) {
+            float ratio = imgAspect / screenAspect;
+            uvFit.y = (st.y - 0.5) * ratio + 0.5;
+          } else {
+            float ratio = screenAspect / imgAspect;
+            uvFit.x = (st.x - 0.5) * ratio + 0.5;
           }
         } else {
-          // Screen taller than image -> fit width, center vertically
-          float ratio = imgAspect / screenAspect;
-          uvFit.y = (st.y - 0.5) * ratio + 0.5;
-          if (uvFit.y < 0.0 || uvFit.y > 1.0) {
-            gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
-            return;
+          // CONTAIN / FIT UNTOUCHED
+          if (screenAspect > imgAspect) {
+            float ratio = screenAspect / imgAspect;
+            uvFit.x = (st.x - 0.5) * ratio + 0.5;
+            if (uvFit.x < 0.0 || uvFit.x > 1.0) {
+              gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+              return;
+            }
+          } else {
+            float ratio = imgAspect / screenAspect;
+            uvFit.y = (st.y - 0.5) * ratio + 0.5;
+            if (uvFit.y < 0.0 || uvFit.y > 1.0) {
+              gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+              return;
+            }
           }
         }
       }
@@ -84,6 +95,7 @@ const ParallaxCanvas = forwardRef(function ParallaxCanvas(
     intensity = 0.05,
     focusPlane = 0.5,
     overscan = 0.02,
+    fitMode = 'contain',
     autoWiggle = true,
     showDepth = false,
     invertDepth = false,
@@ -188,6 +200,7 @@ const ParallaxCanvas = forwardRef(function ParallaxCanvas(
         uIntensity: { value: intensity },
         uFocus: { value: focusPlane },
         uOverscan: { value: overscan },
+        uFitMode: { value: fitMode === 'cover' ? 1.0 : 0.0 },
         uInvert: { value: invertDepth ? 1.0 : 0.0 },
         uShowDepth: { value: showDepth ? 1.0 : 0.0 },
         uResolution: { value: new THREE.Vector2(width, height) },
@@ -223,11 +236,11 @@ const ParallaxCanvas = forwardRef(function ParallaxCanvas(
     // Resize observer
     const resizeObserver = new ResizeObserver((entries) => {
       for (let entry of entries) {
-        const { width: newW, height: newH } = entry.contentRect;
-        if (newW > 0 && newH > 0) {
-          renderer.setSize(newW, newH);
+        const { width: w, height: h } = entry.contentRect;
+        if (w > 0 && h > 0) {
+          renderer.setSize(w, h);
           if (materialRef.current) {
-            materialRef.current.uniforms.uResolution.value.set(newW, newH);
+            materialRef.current.uniforms.uResolution.value.set(w, h);
           }
         }
       }
@@ -237,11 +250,11 @@ const ParallaxCanvas = forwardRef(function ParallaxCanvas(
     return () => {
       cancelAnimationFrame(animFrameRef.current);
       resizeObserver.disconnect();
-      geometry.dispose();
-      material.dispose();
+      renderer.dispose();
       imgTexture.dispose();
       depthTexture.dispose();
-      renderer.dispose();
+      geometry.dispose();
+      material.dispose();
     };
   }, [imageSrc, depthSrc]);
 
@@ -251,10 +264,11 @@ const ParallaxCanvas = forwardRef(function ParallaxCanvas(
       materialRef.current.uniforms.uIntensity.value = intensity;
       materialRef.current.uniforms.uFocus.value = focusPlane;
       materialRef.current.uniforms.uOverscan.value = overscan;
+      materialRef.current.uniforms.uFitMode.value = fitMode === 'cover' ? 1.0 : 0.0;
       materialRef.current.uniforms.uShowDepth.value = showDepth ? 1.0 : 0.0;
       materialRef.current.uniforms.uInvert.value = invertDepth ? 1.0 : 0.0;
     }
-  }, [intensity, focusPlane, overscan, showDepth, invertDepth]);
+  }, [intensity, focusPlane, overscan, fitMode, showDepth, invertDepth]);
 
   // Pointer move handlers
   const handlePointerMove = (e) => {
