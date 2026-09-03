@@ -1,0 +1,11 @@
+services:
+  paralex:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: paralex-3d
+    restart: unless-stopped
+    ports:
+      - "7070:80"
+    environment:
+      - NODE_ENV=production
