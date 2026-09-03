@@ -2,7 +2,7 @@
 
 Paralex 3D transforms standard 2D photos into high-definition interactive 3D spatial photos with depth maps, gyroscope motion tilting, and export capabilities (.mp4 video with cinematic soundtrack & .gif animations).
 
-![Paralex 3D Studio](https://images.unsplash.com/photo-1579783902614-a3fb3927b675?w=1200&q=80)
+
 
 ---
 
