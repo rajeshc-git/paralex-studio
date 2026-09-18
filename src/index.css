@@ -202,36 +202,52 @@ html, body {
 @media (max-width: 640px) {
   .macos-titlebar {
     height: auto;
-    padding: 12px 14px 10px;
+    padding: 10px 14px;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    gap: 10px;
-  }
-
-  .brand-logo-group {
-    display: flex;
+    justify-content: space-between;
+    gap: 8px;
   }
 
   .traffic-lights {
     display: none;
   }
 
+  .brand-logo-group {
+    justify-content: flex-start;
+    flex: none;
+  }
+
+  .brand-title {
+    font-size: 18px;
+  }
+
+  .brand-icon-box {
+    width: 30px;
+    height: 30px;
+  }
+
+  .brand-icon-box svg {
+    width: 16px;
+    height: 16px;
+  }
+
   .window-right-actions {
-    display: none;
+    display: flex;
+    width: auto;
+    justify-content: flex-end;
   }
 
   .window-center-control {
-    width: 100%;
-    padding: 4px;
-    border-radius: 10px;
+    padding: 2px;
+    border-radius: 8px;
+    gap: 2px;
   }
 
   .wizard-tab-btn {
-    flex: 1;
-    justify-content: center;
-    padding: 8px 12px;
-    font-size: 13px;
+    padding: 6px 10px;
+    font-size: 12px;
   }
 }
 
@@ -414,18 +430,41 @@ html, body {
   }
 }
 
-/* Canvas Viewport — height driven by dynamic aspect-ratio from JS */
+/* Canvas Viewport — Sturdy showcase stage for device frames without aspect-ratio shrink */
 .canvas-viewport {
   width: 100%;
-  max-height: 75vh;
-  background: #090c10;
-  border-radius: 14px;
+  height: 520px;
+  max-height: 72vh;
+  min-height: 400px;
+  background: radial-gradient(circle at 50% 30%, #151d2c 0%, #090c10 100%);
+  border-radius: 16px;
   overflow: hidden;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 12px 32px -8px rgba(0, 0, 0, 0.35);
+  box-sizing: border-box;
+}
+
+/* Mobile Viewport — Fits photo ratio directly without fake frame */
+.canvas-viewport.mobile-viewport {
+  height: auto;
+  min-height: 280px;
+  max-height: 60vh;
+  padding: 0;
+  border-radius: 14px;
+  background: #090c10;
+}
+
+/* Mobile Direct View (Borderless canvas container on mobile devices) */
+.mobile-direct-canvas-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
 }
 
 /* Responsive iPhone Bezel Stage */
@@ -442,8 +481,10 @@ html, body {
 .iphone-chassis {
   position: relative;
   height: 100%;
-  max-height: 490px;
+  max-height: 480px;
   aspect-ratio: 9 / 19.2;
+  width: auto;
+  max-width: 100%;
   border-radius: 44px;
   padding: 9px;
   background: linear-gradient(180deg, #475569 0%, #1e293b 40%, #0f172a 100%);
@@ -451,6 +492,7 @@ html, body {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 /* Hardware side buttons */
@@ -498,8 +540,10 @@ html, body {
 .ipad-chassis {
   position: relative;
   height: 100%;
-  max-height: 480px;
+  max-height: 470px;
   aspect-ratio: 4 / 3;
+  width: auto;
+  max-width: 100%;
   border-radius: 28px;
   padding: 12px;
   background: linear-gradient(180deg, #475569 0%, #1e293b 40%, #0f172a 100%);
@@ -507,6 +551,7 @@ html, body {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .ipad-camera-dot {
@@ -621,7 +666,18 @@ html, body {
   pointer-events: none;
 }
 
-/* Universal Floating Icon-Only Stretch Toggle Button (iPhone, iPad, MacBook) */
+/* 3D Chassis Specular Glare Reflection */
+.frame-specular-glare {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 25;
+  mix-blend-mode: overlay;
+  transition: opacity 0.12s ease-out;
+}
+
+/* Universal Floating Icon-Only Stretch Toggle Button */
 .frame-stretch-toggle-btn {
   position: absolute;
   bottom: 14px;
@@ -659,6 +715,11 @@ html, body {
   right: 10px;
 }
 
+.frame-stretch-toggle-btn.mobile-pos {
+  bottom: 12px;
+  right: 12px;
+}
+
 /* Responsive MacBook / Desktop Laptop Stage */
 .macbook-stage {
   display: flex;
@@ -666,13 +727,16 @@ html, body {
   justify-content: center;
   width: 100%;
   height: 100%;
-  padding: 6px;
+  padding: 16px;
+  box-sizing: border-box;
 }
 
 .macbook-chassis {
   position: relative;
   width: 100%;
-  height: 100%;
+  max-width: 620px;
+  height: auto;
+  max-height: 100%;
   background: #0d1117;
   border-radius: 12px 12px 6px 6px;
   padding: 8px 8px 0px 8px;
@@ -683,6 +747,7 @@ html, body {
     0 0 0 1.5px rgba(255, 255, 255, 0.12),
     inset 0 1px 1px rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(0, 0, 0, 0.6);
+  box-sizing: border-box;
 }
 
 /* MacBook FaceTime Camera Notch */

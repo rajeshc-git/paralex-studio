@@ -11,6 +11,7 @@ import {
   ArrowLeft,
   RotateCw,
   Maximize2,
+  Minimize2,
   X,
   Layers,
   Target
@@ -21,6 +22,7 @@ import ParallaxCanvas from './components/ParallaxCanvas';
 import IphoneFrame from './components/IphoneFrame';
 import IpadFrame from './components/IpadFrame';
 import MacbookFrame from './components/MacbookFrame';
+import MobileDirectFrame from './components/MobileDirectFrame';
 import LegalModal from './components/LegalModal';
 import SpatialSlider from './components/SpatialSlider';
 import { getSamplePresets } from './utils/sampleData';
@@ -59,18 +61,33 @@ export default function App() {
   const canvasHandleRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  // Detect device & load initial presets on mount
+  // Detect device & load initial presets on mount + handle window resize
   useEffect(() => {
+    const handleResize = () => {
+      const devType = getDeviceType();
+      setDetectedDevice((prevDev) => {
+        if (prevDev !== devType) {
+          if (devType === 'tablet') {
+            setActiveFrameMode((curr) => (curr === 'desktop' ? 'ipad' : curr));
+          } else if (devType === 'desktop') {
+            setActiveFrameMode((curr) => (curr === 'ipad' ? 'desktop' : curr));
+          }
+          return devType;
+        }
+        return prevDev;
+      });
+    };
+
     const devType = getDeviceType();
     setDetectedDevice(devType);
 
-    if (devType === 'mobile') {
-      setActiveFrameMode('iphone');
-    } else if (devType === 'tablet') {
+    if (devType === 'tablet') {
       setActiveFrameMode('ipad');
     } else {
       setActiveFrameMode('desktop');
     }
+
+    window.addEventListener('resize', handleResize);
 
     const loadedPresets = getSamplePresets();
     setPresets(loadedPresets);
@@ -102,6 +119,10 @@ export default function App() {
       document.addEventListener('click', requestOnFirstGesture, true);
       document.addEventListener('touchend', requestOnFirstGesture, true);
     }
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   const triggerCelebration = () => {
@@ -229,11 +250,9 @@ export default function App() {
     return () => window.removeEventListener('paste', handlePaste);
   }, []);
 
-  // MP4 and GIF recording handler
+  // High-Resolution 1080p MP4 and Animated GIF export handler
   const handleExportMedia = async (targetFormat = 'mp4') => {
-    if (!canvasHandleRef.current) return;
-    const canvas = canvasHandleRef.current.getCanvas();
-    if (!canvas) return;
+    if (!currentPhoto) return;
 
     try {
       setIsRecording(true);
@@ -241,9 +260,16 @@ export default function App() {
       setRecordProgress(0);
 
       await recordParallaxMedia({
-        canvas,
+        imageSrc: currentPhoto.image,
+        depthSrc: currentPhoto.depth,
+        intensity,
+        focusPlane,
+        overscan: 0.02,
+        fitMode: frameFitMode,
+        aspectRatio: imageAspect,
         format: targetFormat,
-        durationMs: 3800,
+        durationMs: targetFormat === 'mp4' ? 10000 : 4000,
+        canvas: canvasHandleRef.current?.getCanvas(),
         setMouseCoords: (x, y) => {
           if (canvasHandleRef.current) {
             canvasHandleRef.current.setOverrideCoords(x, y);
@@ -259,8 +285,8 @@ export default function App() {
       }
       triggerCelebration();
     } catch (err) {
-      console.error(err);
-      alert('Media export could not complete.');
+      console.error('Export error:', err);
+      alert('Media export could not complete: ' + (err.message || 'Unknown error'));
     } finally {
       setIsRecording(false);
       setRecordProgress(0);
@@ -287,6 +313,16 @@ export default function App() {
       />
     );
 
+    // On mobile devices/screens (<=640px or mobile UA), render clean direct view with 3D physical tilt & fullscreen expand
+    if (detectedDevice === 'mobile') {
+      return (
+        <MobileDirectFrame onOpenFullscreen={() => setIsFullscreenModal(true)}>
+          {canvasComponent}
+        </MobileDirectFrame>
+      );
+    }
+
+    // On tablet & desktop viewports, render the selected device frame
     if (activeFrameMode === 'iphone') {
       return (
         <IphoneFrame fitMode={frameFitMode} onToggleFitMode={toggleFitMode}>
@@ -427,8 +463,15 @@ export default function App() {
           ) : (
             /* STEP 2: 3D SPATIAL OUTPUT VIEW */
             <div className="output-view-container">
-              {/* 3D Canvas Stage */}
-              <div className="canvas-viewport" style={{ aspectRatio: imageAspect }}>
+              {/* 3D Canvas Stage — Sturdy, responsive frame container without aspect-ratio shrink */}
+              <div
+                className={`canvas-viewport ${detectedDevice === 'mobile' ? 'mobile-viewport' : ''}`}
+                style={
+                  detectedDevice === 'mobile'
+                    ? { aspectRatio: imageAspect ? `${Math.max(0.68, Math.min(imageAspect, 1.6))}` : '1 / 1' }
+                    : undefined
+                }
+              >
                 {renderFrameStage()}
               </div>
 
@@ -470,10 +513,10 @@ export default function App() {
                   />
                 </div>
 
-                {/* Card 2: Device View Selector (Desktop Mode) */}
-                {detectedDevice === 'desktop' && (
+                {/* Card 2: Device View Selector (Tablet & Desktop Mode) */}
+                {detectedDevice !== 'mobile' && (
                   <div className="sidebar-card">
-                    <div className="card-sublabel">Device View Mode</div>
+                    <div className="card-sublabel">Device Frame Mode</div>
                     <div className="device-select-chips">
                       <button
                         className={`device-chip ${activeFrameMode === 'iphone' ? 'active' : ''}`}

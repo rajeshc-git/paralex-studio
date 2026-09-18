@@ -1,5 +1,6 @@
 import React from 'react';
 import { Wifi, Battery, Signal, Maximize2, Minimize2 } from 'lucide-react';
+import { use3DTilt } from '../utils/use3DTilt';
 
 export default function IphoneFrame({
   children,
@@ -7,6 +8,12 @@ export default function IphoneFrame({
   onToggleFitMode,
   isFrameActive = true
 }) {
+  const { transform, boxShadow, glare, onPointerMove, onPointerLeave } = use3DTilt({
+    maxTilt: 9.5,
+    perspective: 1000,
+    scale: 1.025
+  });
+
   if (!isFrameActive) {
     return (
       <div className="borderless-canvas-container">
@@ -18,9 +25,29 @@ export default function IphoneFrame({
   const isCover = fitMode === 'cover';
 
   return (
-    <div className="iphone-stage">
-      {/* Outer Titanium/Steel Chassis */}
-      <div className="iphone-chassis">
+    <div
+      className="iphone-stage"
+      onPointerMove={onPointerMove}
+      onPointerLeave={onPointerLeave}
+    >
+      {/* Outer Titanium/Steel Chassis with 3D physical tilt */}
+      <div
+        className="iphone-chassis"
+        style={{
+          transform,
+          boxShadow,
+          transformStyle: 'preserve-3d'
+        }}
+      >
+        {/* Specular glass reflection layer */}
+        <div
+          className="frame-specular-glare"
+          style={{
+            opacity: glare.opacity,
+            background: `radial-gradient(circle at ${glare.x}% ${glare.y}%, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 65%)`
+          }}
+        />
+
         {/* Hardware side buttons */}
         <div className="iphone-btn-side action-btn" />
         <div className="iphone-btn-side volume-up" />

@@ -1,8 +1,9 @@
 import React from 'react';
 import { Maximize2, Minimize2 } from 'lucide-react';
+import { use3DTilt } from '../utils/use3DTilt';
 
 /**
- * MacBook Pro / Desktop Ultra-Thin Laptop Bezel Frame
+ * MacBook Pro / Desktop Ultra-Thin Laptop Bezel Frame with Dual-Layer 3D Physics
  */
 export default function MacbookFrame({
   children,
@@ -10,18 +11,37 @@ export default function MacbookFrame({
   fitMode = 'contain',
   onToggleFitMode
 }) {
+  const { transform, boxShadow, glare, onPointerMove, onPointerLeave } = use3DTilt({
+    maxTilt: 7.5,
+    perspective: 1100,
+    scale: 1.018
+  });
   const isCover = fitMode === 'cover';
 
   return (
-    <div className="macbook-stage">
+    <div
+      className="macbook-stage"
+      onPointerMove={onPointerMove}
+      onPointerLeave={onPointerLeave}
+    >
       <div
         className="macbook-chassis"
         style={{
-          aspectRatio: aspectRatio ? `${aspectRatio}` : '16 / 10',
-          maxWidth: '100%',
-          maxHeight: '100%'
+          aspectRatio: aspectRatio ? `${Math.max(1.2, Math.min(aspectRatio, 1.85))}` : '16 / 10',
+          transform,
+          boxShadow,
+          transformStyle: 'preserve-3d'
         }}
       >
+        {/* Specular glass reflection layer */}
+        <div
+          className="frame-specular-glare"
+          style={{
+            opacity: glare.opacity,
+            background: `radial-gradient(circle at ${glare.x}% ${glare.y}%, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 65%)`
+          }}
+        />
+
         {/* Top FaceTime Camera Center Dot */}
         <div className="macbook-camera-notch">
           <div className="macbook-camera-lens" />
